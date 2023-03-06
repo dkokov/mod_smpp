@@ -1,0 +1,72 @@
+1. SAR support for Long Short Messages
+    - put SMPP options in the Long SM:
+      add 'sar_segment_seqnum','sar_total_segments' and 'sar_msg_ref_num' TLVs
+      in 'SUBMIT_SM' as get values from event headers ( mod_smpp_message_create(),mod_smsp_message.c )
+
+    - get SMPP options from the Long SM:
+      decode 'sar_segment_seqnum','sar_total_segments' and 'sar_msg_ref_num' TLVs
+      from 'DELIVER_SM' and add as event headers ( mod_smpp_message_decode(),mod_smsp_message.c )
+
+    - add 'destroy_tlv()' ( mod_smpp_message_destroy(),mod_smpp_message.c )
+
+2. More options in a 'mod_smpp_message_create()' function
+    - add 'data_coding' in 'SUBMIT_SM' as get the value from event header
+    - add 'esm_class' in 'SUBMIT_SM' as get the value from event header
+    - add 'schedule_delivery_time' in 'SUBMIT_SM' as get the value from event header
+    - add 'validity_period' in 'SUBMIT_SM' as get the value from event header
+    - add 'registery_delivery' in 'SUBMIT_SM' as get the value from event header
+    - add 'source_addr_ton' in 'SUBMIT_SM' as get the value from event header
+    - add 'source_addr_npi' in 'SUBMIT_SM' as get the value from event header
+    - add 'dest_addr_ton' in 'SUBMIT_SM' as get the value from event header
+    - add 'dest_addr_npi' in 'SUBMIT_SM' as get the value from event header
+
+3. More options in a 'mod_smpp_message_decode()' function
+    - add 'esm_class' event header as get the value from 'DELIVER_SM'
+
+4. Auto data coding recognize (data_coding_recognize(),mod_smpp_message.c)
+
+5. UTF-8 to UCS-2 converting when send SMS to SMPP (utf8_to_ucs2(),mod_smpp_message.c)
+
+6. UCS-2 to UTF-8 converting when receive SMS from SMPP (ucs2_to_utf8(),mod_smpp_message.c)
+
+7. Separate received 'esm_class' to 'message_mode','message_type' and 'gsm_features'
+
+8. Global setting data_coding_recognize in smpp.conf 
+   - whether to use data_coding from event or auto recognize from body 
+
+9. Receive TLVs 'message_state','recipient_message_id','network_error_code' in DELIVER_SM(using for DR)
+   and add as event headers 
+
+10. recv UNBIND,send UNBIND_RESP and socket restart (fix or new feature ?)
+
+11. add event header 'message_id' from SUBMIT_SM_RESP
+
+12. PGSQL support in the smpp module:
+    - pgsql connection init
+    - insert record in the 'message_scheduler' table when send SUBMIT_SM
+    - update record in the 'message_scheduler' table when recv SUBMIT_SM_RESP
+    - insert record in the 'message_scheduler' table when recv DELIVERY_SM
+
+13. Send QUERY_SM (mod_smpp_message_create_query_sm(),) 
+    - release as API Function,store a response in the pgsql(final_date,message_state,error_code)
+
+14. Change receiving schem in mod_smpp_gateway_connection_read() and mod_smpp_gateway_read_thread() functions
+
+15. Add 'BUFSZ' in 'mod_smpp.h' as size of the local_buffer
+
+16. Add SUBMIT_MULTI (mod_smpp_message_create_multi()) ???? don't work !!! test only into OC iSMSC
+
+17. Add GSM-7 data coding and use 7,8 and 16-bits data coding
+
+18. message_scheduler: store msg in pgsql,use msg_state,retry alg
+
+19. gateway monitor: send ENQUIRE_LINK,use last_recv & last_send ts
+
+20. change ENQUIRE_LINK_RESP - to use receiving sequence_number from ENQUIRE_LINK
+
+21. patch 'mod_sms' - to able to update 'message_scheduler' with 'sip_msg_resp_code','sip_msg_delivery_status'
+
+22. add in the gateway settings(gateway struct),'mon_thread_timer' and 'reconn_retry_sec' params
+
+23. add 'gsm_to_utf8[]',use this instead 'gsm_to_unicode[],when use UTF-8
+
